@@ -1,0 +1,67 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - dosewell_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: production
+      DB_HOST: db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      SECRET_KEY_BASE: a4f1c8e0b92d47f6a1c3e5b7890d2f4a6c8e0b1d3f5a7c9e1b3d5f7a9c0e2b4d6f8a0c2e4b6d8f0a1c3e5b7d9f1a3c5e7b9d0f2a4c6e8b0d2f4a6c8e0b2d4
+      SEED_DEMO: "true"
+      FORCE_SSL: "false"
+      CORS_ORIGINS: http://localhost:3001
+      RAILS_LOG_LEVEL: info
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 25s
+
+  web:
+    build: ../dosewell-web
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_URL: http://api:3000
+      PORT: "3001"
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "3001:3001"
+
+  test:
+    profiles: ["test"]
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: test
+      DB_HOST: db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      BUNDLE_WITHOUT: ""
+      SECRET_KEY_BASE: test-secret
+    command: ["bash", "-lc", "./bin/rails db:test:prepare && ./bin/rails test"]
+
+volumes:
+  dosewell_pg:
