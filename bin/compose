@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+if [ ! -f .env ]; then
+  secret="$(ruby -rsecurerandom -e 'print SecureRandom.hex(64)')"
+  cat > .env <<EOF
+SECRET_KEY_BASE=${secret}
+SEED_DEMO=true
+ALLOW_DEMO_SEED=true
+EOF
+  echo "Wrote a local .env. It is not committed."
+fi
+
+exec docker compose "$@"

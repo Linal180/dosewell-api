@@ -11,6 +11,13 @@ class Dose < ApplicationRecord
   validates :local_time, format: { with: Prescription::TIME_PATTERN }
   validate :patient_matches_prescription
 
+  scope :counts_toward_adherence, -> {
+    joins(:prescription).where(<<~SQL.squish)
+      doses.status <> 'scheduled'
+      OR doses.local_date >= (prescriptions.created_at AT TIME ZONE 'UTC' AT TIME ZONE prescriptions.timezone)::date
+    SQL
+  }
+
   def as_api
     {
       id:,

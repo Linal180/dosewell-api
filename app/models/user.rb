@@ -27,9 +27,11 @@ class User < ApplicationRecord
     payload = { id:, email:, name:, role:, timezone: }
     return payload unless detail
 
+    prescriptions = prescriptions_as_patient.includes(:medication, :doctor).order(start_date: :desc)
+    counts = Dose.where(prescription_id: prescriptions.map(&:id)).group(:prescription_id).count
     payload.merge(
       allergies: allergies.order(:ingredient).map(&:as_api),
-      prescriptions: prescriptions_as_patient.includes(:medication, :doctor).order(start_date: :desc).map(&:as_api)
+      prescriptions: prescriptions.map { |prescription| prescription.as_api(dose_count: counts[prescription.id] || 0) }
     )
   end
 end

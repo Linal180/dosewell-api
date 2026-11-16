@@ -2,8 +2,8 @@ module Api
   module V1
     class AuditLogsController < ApplicationController
       def index
-        logs = visible.order(created_at: :desc).limit(100).includes(:actor)
-        render json: { audit_logs: logs.map(&:as_api) }
+        page, pagination = paginate(visible.order(created_at: :desc))
+        render json: { audit_logs: page.includes(:actor).map(&:as_api), pagination: }
       end
 
       private

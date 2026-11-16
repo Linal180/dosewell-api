@@ -100,6 +100,36 @@ class DosesTest < ActionDispatch::IntegrationTest
     assert_empty json_body["audit_logs"]
   end
 
+  test "backdated unmarked doses do not lower adherence" do
+    ids = Prescription.where(patient: users(:sam)).pluck(:id)
+    Dose.where(prescription_id: ids).delete_all
+    Prescription.where(id: ids).delete_all
+
+    travel_to Time.utc(2026, 6, 10, 15, 0, 0) do
+      post "/api/v1/prescriptions",
+        params: { prescription: prescription_params.merge(start_date: "2026-06-08", duration_days: 4) },
+        headers: auth_header(:maya),
+        as: :json
+      assert_response :created
+
+      get "/api/v1/adherence", headers: auth_header(:sam)
+      assert_equal 1, json_body.dig("adherence", "scheduled")
+      assert_equal 1, json_body.dig("adherence", "courses").sum { |course| course["scheduled"] }
+    end
+  end
+
+  test "dose and audit lists are paged" do
+    get "/api/v1/doses?per=1", headers: auth_header(:sam)
+    assert_response :success
+    assert_equal 1, json_body["doses"].length
+    assert_operator json_body.dig("pagination", "total"), :>, 1
+
+    get "/api/v1/audit_logs?per=1&page=1", headers: auth_header(:priya)
+    assert_response :success
+    assert_equal 1, json_body["audit_logs"].length
+    assert json_body["pagination"].key?("total")
+  end
+
   test "a bad date filter is rejected" do
     get "/api/v1/doses?from=03-08-2026", headers: auth_header(:sam)
     assert_response :unprocessable_entity

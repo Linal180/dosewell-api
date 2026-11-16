@@ -52,9 +52,26 @@ module Prescriptions
           code = "invalid"
           prescription.errors.add(:base, "Schedule produced no doses")
           raise ActiveRecord::Rollback
+        elsif doses.size > Schedules::Generator::MAX_DOSES
+          code = "invalid"
+          prescription.errors.add(:base, "Schedule has too many doses")
+          raise ActiveRecord::Rollback
+        elsif doses.map { |dose| dose[:scheduled_at].to_i }.uniq.size != doses.size
+          code = "invalid"
+          prescription.errors.add(:base, "Those times land on the same instant after a daylight-saving change")
+          raise ActiveRecord::Rollback
         end
 
-        doses.each { |attrs| prescription.doses.create!(attrs.merge(patient: prescription.patient)) }
+        now = Time.current
+        Dose.insert_all!(doses.map { |attrs|
+          attrs.merge(
+            prescription_id: prescription.id,
+            patient_id: prescription.patient_id,
+            status: "scheduled",
+            created_at: now,
+            updated_at: now
+          )
+        })
         Audit::Recorder.call(
           actor: @doctor,
           action: "prescription.created",
@@ -78,6 +95,9 @@ module Prescriptions
       Result.new(ok: false, code: code || "invalid", prescription:, blocked:, warnings:)
     rescue Schedules::UnresolvableTime => error
       prescription.errors.add(:base, error.message)
+      invalid(prescription)
+    rescue ActiveRecord::RecordNotUnique
+      prescription.errors.add(:base, "Those times land on the same instant after a daylight-saving change")
       invalid(prescription)
     end
 

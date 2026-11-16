@@ -1,10 +1,10 @@
 module Api
   module V1
     class PrescriptionsController < ApplicationController
-      before_action -> { require_role!("doctor") }, only: :create
+      allow_writes_for :doctor, only: %i[create cancel]
 
       def index
-        prescriptions = visible.includes(:medication, :patient, :doctor).order(start_date: :desc, id: :desc)
+        prescriptions = visible.order(start_date: :desc, id: :desc)
         if params[:patient_id].present?
           if current_user.patient? && params[:patient_id].to_i != current_user.id
             return render json: { error: "Forbidden" }, status: :forbidden
@@ -12,7 +12,13 @@ module Api
           prescriptions = prescriptions.where(patient_id: params[:patient_id]) unless current_user.patient?
         end
 
-        render json: { prescriptions: prescriptions.map(&:as_api) }
+        page, pagination = paginate(prescriptions)
+        records = page.includes(:medication, :patient, :doctor)
+        counts = Dose.where(prescription_id: records.map(&:id)).group(:prescription_id).count
+        render json: {
+          prescriptions: records.map { |prescription| prescription.as_api(dose_count: counts[prescription.id] || 0) },
+          pagination:
+        }
       end
 
       def show
@@ -22,6 +28,15 @@ module Api
         end
 
         render json: { prescription: prescription.as_api(include_doses: true) }
+      end
+
+      def cancel
+        result = Prescriptions::Canceller.call(prescription: Prescription.find(params[:id]), doctor: current_user)
+        if result.ok?
+          render json: { prescription: result.prescription.as_api }
+        else
+          render json: { error: "Invalid prescription", code: result.code, details: result.prescription.errors.to_hash }, status: :unprocessable_entity
+        end
       end
 
       def create

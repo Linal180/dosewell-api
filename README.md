@@ -9,7 +9,7 @@ The Next.js clinic UI lives in the sibling repo `dosewell-web`.
 Clone this repo and `dosewell-web` side by side, then from this directory:
 
 ```bash
-docker compose up --build
+./bin/compose up --build
 ```
 
 - API: http://localhost:3000
@@ -27,7 +27,7 @@ Demo password for every seeded user: `Password1!`
 Ava is allergic to ibuprofen and amoxicillin, and already has a lisinopril course. Run the suite with Docker:
 
 ```bash
-docker compose --profile test run --rm test
+./bin/compose --profile test run --rm test
 ```
 
 Or locally against Postgres (`DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`):
@@ -41,7 +41,9 @@ bin/rails db:test:prepare && bin/rails test
 - `POST /api/v1/auth/login` returns a signed token. Send it as `Authorization: Bearer`.
 - Doctors `POST /api/v1/prescriptions` with dose, frequency, times, duration, start date, and an IANA timezone.
 - The schedule is saved as one row per dose. Patients `PATCH /api/v1/doses/:id` with `taken` or `missed`.
-- `GET /api/v1/adherence` is taken doses divided by doses already due. Unmarked past doses count against the percentage. Future doses are ignored.
+- `GET /api/v1/adherence` is taken doses divided by doses already due. Unmarked past doses count against the percentage, except doses from before the day the course was written. Future doses are ignored. The payload also splits the same numbers by course.
+- A doctor `POST /api/v1/prescriptions/:id/cancel` stops the course, removes future scheduled doses, and writes an audit row.
+- Dose, prescription, and audit lists take `page` and `per` (max 100) and return `pagination`.
 - Allergies block prescribing. Major drug interactions block it. Moderate interactions return `acknowledgement_required` until the doctor sends `acknowledge_warnings: true`. Minor interactions are stored and do not stop the prescription.
 - Every saved change writes an audit row: actor, action, summary, and timestamp.
 
@@ -72,9 +74,9 @@ The interaction and allergy lists are seeded. They are not a drug database.
 - Audit denied prescriptions as well as saved changes.
 - Mark a dose missed automatically after a grace period, with its own audit row.
 - Match allergies by drug class, not only by ingredient.
-- Paginate audit and dose lists, and add token revocation.
+- Add token revocation.
 - Host the API on a container platform such as Fly or Render. Vercel and Netlify host the Next.js app; they are a poor fit for this Rails process.
 
 ## Deploy
 
-Build the `Dockerfile` and set `DATABASE_URL` or `DB_HOST`, `SECRET_KEY_BASE`, and `FORCE_SSL=true` behind TLS. Leave `SEED_DEMO` unset outside the local compose file. The UI reads this API from `API_URL`.
+Build the `Dockerfile` and set `DATABASE_URL` or `DB_HOST`, `SECRET_KEY_BASE`, and `FORCE_SSL=true` behind TLS. Do not commit the secret. Leave `SEED_DEMO` and `ALLOW_DEMO_SEED` unset outside a local demo. `./bin/compose` writes a gitignored `.env` for that demo, and seeding does not reset an existing password. The UI reads this API from `API_URL`.

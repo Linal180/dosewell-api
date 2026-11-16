@@ -3,8 +3,10 @@
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
-  if [ "$SEED_DEMO" = "true" ]; then
+  if [ "$SEED_DEMO" = "true" ] && [ "$ALLOW_DEMO_SEED" = "true" ]; then
     ./bin/rails db:seed
+  elif [ "$SEED_DEMO" = "true" ]; then
+    echo "SEED_DEMO ignored. Set ALLOW_DEMO_SEED=true to load the demo clinic." >&2
   fi
 fi
 

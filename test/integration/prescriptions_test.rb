@@ -121,6 +121,53 @@ class PrescriptionsTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "daylight-saving collisions and oversized schedules are rejected" do
+    travel_to Time.utc(2026, 3, 6, 15, 0, 0) do
+      assert_no_difference "Prescription.count" do
+        post_prescription(:sam, :metformin, frequency: "twice_daily", times_of_day: ["02:30", "03:30"], start_date: "2026-03-08", duration_days: 1)
+        assert_response :unprocessable_entity
+        assert_match "same instant", json_body.dig("details", "base").join
+
+        post_prescription(:sam, :metformin, frequency: "every_n_hours", times_of_day: ["08:00"], interval_hours: 1, duration_days: 365, start_date: "2026-03-07")
+        assert_response :unprocessable_entity
+        assert_match "too many", json_body.dig("details", "base").join
+      end
+    end
+  end
+
+  test "an allergy still matches when the stored ingredient has different case" do
+    allergies(:ava_ibuprofen).update_column(:ingredient, "Ibuprofen")
+
+    travel_to @when do
+      assert_no_difference "Prescription.count" do
+        post_prescription(:ava, :ibuprofen)
+      end
+    end
+
+    assert_response :unprocessable_entity
+    assert_equal "allergy", json_body["blocked"].first["type"]
+  end
+
+  test "a doctor can cancel an active course and a pharmacist cannot" do
+    travel_to @when do
+      post_prescription(:sam, :metformin, duration_days: 3)
+      id = json_body.dig("prescription", "id")
+      assert_equal 3, Dose.where(prescription_id: id).count
+
+      post "/api/v1/prescriptions/#{id}/cancel", headers: auth_header(:priya), as: :json
+      assert_response :forbidden
+
+      post "/api/v1/prescriptions/#{id}/cancel", headers: auth_header(:maya), as: :json
+      assert_response :success
+      assert_equal "cancelled", json_body.dig("prescription", "status")
+      assert_equal 1, Dose.where(prescription_id: id).count
+      assert_equal "prescription.cancelled", AuditLog.order(:id).last.action
+
+      post "/api/v1/prescriptions/#{id}/cancel", headers: auth_header(:maya), as: :json
+      assert_response :unprocessable_entity
+    end
+  end
+
   test "a patient cannot read another patient's prescription" do
     travel_to @when do
       post_prescription(:sam, :metformin)

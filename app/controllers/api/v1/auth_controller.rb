@@ -2,6 +2,7 @@ module Api
   module V1
     class AuthController < ApplicationController
       skip_before_action :authenticate!, only: :login
+      skip_before_action :enforce_write_role, only: :login
 
       def login
         user = User.find_by(email: params[:email].to_s.strip.downcase)

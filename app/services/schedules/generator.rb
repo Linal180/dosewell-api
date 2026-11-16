@@ -1,5 +1,7 @@
 module Schedules
   class Generator
+    MAX_DOSES = 1_095
+
     def self.call(prescription)
       new(prescription).call
     end

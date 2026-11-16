@@ -5,7 +5,7 @@ def demo_user(email:, name:, role:, timezone:)
   user.name = name
   user.role = role
   user.timezone = timezone
-  user.password = DEMO_PASSWORD
+  user.password = DEMO_PASSWORD if user.new_record?
   user.save!
   user
 end

@@ -22,8 +22,9 @@ services:
       DB_HOST: db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
-      SECRET_KEY_BASE: a4f1c8e0b92d47f6a1c3e5b7890d2f4a6c8e0b1d3f5a7c9e1b3d5f7a9c0e2b4d6f8a0c2e4b6d8f0a1c3e5b7d9f1a3c5e7b9d0f2a4c6e8b0d2f4a6c8e0b2d4
-      SEED_DEMO: "true"
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-}
+      SEED_DEMO: ${SEED_DEMO:-true}
+      ALLOW_DEMO_SEED: ${ALLOW_DEMO_SEED:-}
       FORCE_SSL: "false"
       CORS_ORIGINS: http://localhost:3001
       RAILS_LOG_LEVEL: info

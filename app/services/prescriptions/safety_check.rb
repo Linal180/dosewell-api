@@ -22,7 +22,7 @@ module Prescriptions
     def call
       blocked = []
       warnings = []
-      allergy = @patient.allergies.find_by(ingredient: @medication.ingredient)
+      allergy = @patient.allergies.find_by("LOWER(ingredient) = ?", @medication.ingredient.to_s.downcase)
 
       if allergy
         blocked << item("allergy", "severe", "#{@patient.name} is allergic to #{@medication.ingredient}")

@@ -32,7 +32,7 @@ class Prescription < ApplicationRecord
     start_date + duration_days
   end
 
-  def as_api(include_doses: false)
+  def as_api(include_doses: false, dose_count: nil)
     payload = {
       id:,
       patient_id:,
@@ -53,7 +53,7 @@ class Prescription < ApplicationRecord
       medication: medication.as_api,
       patient: { id: patient.id, name: patient.name },
       doctor: { id: doctor.id, name: doctor.name },
-      dose_count: doses.size
+      dose_count: dose_count.nil? ? doses.size : dose_count
     }
     payload[:doses] = doses.sort_by(&:scheduled_at).map(&:as_api) if include_doses
     payload

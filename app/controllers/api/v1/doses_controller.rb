@@ -1,10 +1,10 @@
 module Api
   module V1
     class DosesController < ApplicationController
-      before_action -> { require_role!("patient") }, only: :update
+      allow_writes_for :patient, only: :update
 
       def index
-        doses = visible.includes(prescription: :medication).order(:scheduled_at)
+        doses = visible.order(:scheduled_at)
         if params[:patient_id].present?
           if current_user.patient? && params[:patient_id].to_i != current_user.id
             return render json: { error: "Forbidden" }, status: :forbidden
@@ -15,7 +15,8 @@ module Api
         doses = doses.where(local_date: date_bound(params[:from])..) if params[:from].present?
         doses = doses.where(local_date: ..date_bound(params[:to])) if params[:to].present?
 
-        render json: { doses: doses.map(&:as_api) }
+        page, pagination = paginate(doses)
+        render json: { doses: page.includes(prescription: :medication).map(&:as_api), pagination: }
       rescue Date::Error
         render json: { error: "Dates must be YYYY-MM-DD" }, status: :unprocessable_entity
       end
