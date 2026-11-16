@@ -9,6 +9,9 @@ Rails.application.routes.draw do
       resources :medications, only: :index
       resources :patients, only: %i[index show]
       resources :prescriptions, only: %i[index show create]
+      resources :doses, only: %i[index update]
+      get "adherence", to: "adherence#show"
+      resources :audit_logs, only: :index
     end
   end
 end

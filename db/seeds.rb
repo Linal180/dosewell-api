@@ -53,3 +53,29 @@ end
 %w[ibuprofen amoxicillin].each do |ingredient|
   Allergy.find_or_create_by!(patient: ava, ingredient:)
 end
+
+if ava.prescriptions_as_patient.none?
+  today = TZInfo::Timezone.get(ava.timezone).now.to_date
+  lisinopril = Medication.find_by!(ingredient: "lisinopril")
+  result = Prescriptions::Creator.call(
+    doctor: maya,
+    params: {
+      patient_id: ava.id,
+      medication_id: lisinopril.id,
+      dose_quantity: 1,
+      dose_unit: "tablet",
+      frequency: "once_daily",
+      times_of_day: ["08:00"],
+      duration_days: 10,
+      start_date: today - 3,
+      timezone: ava.timezone,
+      acknowledge_warnings: false
+    }
+  )
+  raise result.prescription.errors.full_messages.join(", ") unless result.ok?
+
+  result.prescription.doses.where(scheduled_at: ..Time.current).order(:scheduled_at).each_with_index do |dose, index|
+    recorded = Doses::Recorder.call(dose:, actor: ava, status: index.even? ? "taken" : "missed")
+    raise recorded.error unless recorded.ok?
+  end
+end
