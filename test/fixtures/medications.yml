@@ -1,0 +1,79 @@
+lisinopril:
+  id: 1
+  name: Lisinopril
+  generic_name: Lisinopril
+  ingredient: lisinopril
+  strength: 10 mg
+  form: tablet
+
+ibuprofen:
+  id: 2
+  name: Ibuprofen
+  generic_name: Ibuprofen
+  ingredient: ibuprofen
+  strength: 200 mg
+  form: tablet
+
+warfarin:
+  id: 3
+  name: Warfarin
+  generic_name: Warfarin
+  ingredient: warfarin
+  strength: 5 mg
+  form: tablet
+
+aspirin:
+  id: 4
+  name: Aspirin
+  generic_name: Aspirin
+  ingredient: aspirin
+  strength: 81 mg
+  form: tablet
+
+metformin:
+  id: 5
+  name: Metformin
+  generic_name: Metformin
+  ingredient: metformin
+  strength: 500 mg
+  form: tablet
+
+amoxicillin:
+  id: 6
+  name: Amoxicillin
+  generic_name: Amoxicillin
+  ingredient: amoxicillin
+  strength: 500 mg
+  form: capsule
+
+atorvastatin:
+  id: 7
+  name: Atorvastatin
+  generic_name: Atorvastatin
+  ingredient: atorvastatin
+  strength: 20 mg
+  form: tablet
+
+sertraline:
+  id: 8
+  name: Sertraline
+  generic_name: Sertraline
+  ingredient: sertraline
+  strength: 50 mg
+  form: tablet
+
+omeprazole:
+  id: 9
+  name: Omeprazole
+  generic_name: Omeprazole
+  ingredient: omeprazole
+  strength: 20 mg
+  form: capsule
+
+albuterol:
+  id: 10
+  name: Albuterol
+  generic_name: Albuterol
+  ingredient: albuterol
+  strength: 90 mcg
+  form: inhaler

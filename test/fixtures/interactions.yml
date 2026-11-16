@@ -1,0 +1,35 @@
+lisinopril_ibuprofen:
+  medication_a_id: 1
+  medication_b_id: 2
+  severity: moderate
+  description: "Lisinopril + Ibuprofen: Effects can overlap. Confirm before prescribing."
+
+ibuprofen_warfarin:
+  medication_a_id: 2
+  medication_b_id: 3
+  severity: major
+  description: "Ibuprofen + Warfarin: Increased bleeding risk. Do not combine."
+
+ibuprofen_aspirin:
+  medication_a_id: 2
+  medication_b_id: 4
+  severity: moderate
+  description: "Ibuprofen + Aspirin: Effects can overlap. Confirm before prescribing."
+
+warfarin_aspirin:
+  medication_a_id: 3
+  medication_b_id: 4
+  severity: major
+  description: "Warfarin + Aspirin: Increased bleeding risk. Do not combine."
+
+aspirin_sertraline:
+  medication_a_id: 4
+  medication_b_id: 8
+  severity: moderate
+  description: "Aspirin + Sertraline: Effects can overlap. Confirm before prescribing."
+
+atorvastatin_omeprazole:
+  medication_a_id: 7
+  medication_b_id: 9
+  severity: minor
+  description: "Atorvastatin + Omeprazole: Small exposure change. No extra confirmation required."

@@ -1,0 +1,7 @@
+ava_ibuprofen:
+  patient_id: 2
+  ingredient: ibuprofen
+
+ava_amoxicillin:
+  patient_id: 2
+  ingredient: amoxicillin

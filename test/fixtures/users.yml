@@ -1,0 +1,31 @@
+maya:
+  id: 1
+  email: maya.chen@dosewell.test
+  password_digest: "$2a$04$jblJ5d0AelPOvOhNMUMxPuZZpEt8qyLUdFFMoBGEaKtEfGIBpdQjK"
+  name: Maya Chen
+  role: doctor
+  timezone: America/New_York
+
+ava:
+  id: 2
+  email: ava.shah@dosewell.test
+  password_digest: "$2a$04$jblJ5d0AelPOvOhNMUMxPuZZpEt8qyLUdFFMoBGEaKtEfGIBpdQjK"
+  name: Ava Shah
+  role: patient
+  timezone: America/New_York
+
+sam:
+  id: 3
+  email: sam.okonkwo@dosewell.test
+  password_digest: "$2a$04$jblJ5d0AelPOvOhNMUMxPuZZpEt8qyLUdFFMoBGEaKtEfGIBpdQjK"
+  name: Sam Okonkwo
+  role: patient
+  timezone: America/Los_Angeles
+
+priya:
+  id: 4
+  email: priya.nair@dosewell.test
+  password_digest: "$2a$04$jblJ5d0AelPOvOhNMUMxPuZZpEt8qyLUdFFMoBGEaKtEfGIBpdQjK"
+  name: Priya Nair
+  role: pharmacist
+  timezone: America/Chicago
