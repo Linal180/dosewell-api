@@ -6,7 +6,8 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # ubuntu-latest is 26.04, which has no Ruby 3.2.2 build.
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:17
@@ -22,6 +23,7 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libpq-dev
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.2.2"
