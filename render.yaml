@@ -1,0 +1,50 @@
+databases:
+  - name: linal180-dosewell-db
+    plan: free
+    region: oregon
+    postgresMajorVersion: "17"
+    databaseName: dosewell
+    ipAllowList: []
+
+services:
+  - type: web
+    name: linal180-dosewell-api
+    runtime: docker
+    repo: https://github.com/Linal180/dosewell-api
+    branch: main
+    plan: free
+    region: oregon
+    healthCheckPath: /up
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: linal180-dosewell-db
+          property: connectionString
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      - key: FORCE_SSL
+        value: "true"
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_LOG_LEVEL
+        value: info
+      - key: WEB_CONCURRENCY
+        value: "1"
+      - key: SEED_DEMO
+        value: "true"
+      - key: ALLOW_DEMO_SEED
+        value: "true"
+      - key: CORS_ORIGINS
+        value: https://linal180-dosewell-web.onrender.com
+
+  - type: web
+    name: linal180-dosewell-web
+    runtime: docker
+    repo: https://github.com/Linal180/dosewell-web
+    branch: main
+    plan: free
+    region: oregon
+    healthCheckPath: /
+    envVars:
+      - key: API_URL
+        value: https://linal180-dosewell-api.onrender.com
